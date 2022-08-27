@@ -1,3 +1,10 @@
-
+.idea/
+.idea/*
+data/
+data/*
+catboost_info/
+catboost_info/*
+/models/
 *.xml
 *.csv
+
