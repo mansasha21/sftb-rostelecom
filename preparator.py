@@ -40,7 +40,7 @@ class DataPreparator:
         num_cols = df.select_dtypes(include=['float64', 'int64']).columns.values
         for col in num_cols:
             df[col] = df.groupby('subject_name')[col].transform(fill_missing_numerical_by)
-        if is_clustering:
+        if self.is_cluster:
             df['cluster'] = self._clusterize_data_(df)
         pass
 
