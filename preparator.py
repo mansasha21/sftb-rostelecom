@@ -280,6 +280,7 @@ def add_covid_cases_feature(df_test):
     df_covid['period'] = df_covid['date']
     df_covid.drop(["date"], axis=1, inplace=True)
     df3 = df_covid.merge(df_test, on='period', how='right')
+    print(df_test.shape)
     return df3
 
 
@@ -292,6 +293,7 @@ def add_rozn_feature(df_test):
     df_rozn = pd.read_csv('important/rozn.csv')
     df_test = df_test.merge(df_rozn, left_on=['subject_name', 'year'], right_on=['region', 'year']).drop(
         ['region'], axis=1)
+    print("rozn:",df_test.shape)
     return df_test
 
 
@@ -307,6 +309,8 @@ def add_population_feature(df_test):
     df_test = df_test.merge(df_population, left_on=['subject_name', 'year'], right_on=['territory', 'year']).drop(
         ['territory'], axis=1)
 
+    print("population",df_test.shape)
+
     return df_test
 
 
@@ -320,6 +324,7 @@ def add_salary_feature(df_test):
     df_salary.value_salary = df_salary.value_salary.astype(np.float32)
     df_test = df_test.merge(df_salary, left_on=['subject_name', 'year'], right_on=['region', 'year']).drop(
         ['region'], axis=1)
+    print("salary:",df_test.shape)
 
     return df_test
 
@@ -330,7 +335,7 @@ def add_money_feature(df_test):
     :param x: датафрейм с данными о ценах
     :return: датафрейм с добавленной фичей
     """
-    df_money = pd.read_csv('important/money_df.csv')
+    df_money = pd.read_csv('important/money_df.csv', sep=',',index_col=0)
     df_test = df_money.merge(df_test, on='period', how='right')
 
     return df_test
