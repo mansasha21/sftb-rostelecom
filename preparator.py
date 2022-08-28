@@ -265,6 +265,11 @@ def add_covid_cases_feature(df_test):
 
 class DataPreparator:
     def __init__(self):
+        self.add_covid_data = None
+        self.add_rt_tariff_data = None
+        self.add_region_statistical_data = None
+        self.fill_missing_numerical_by = None
+        self.fill_missing_categorical_by = None
         self.is_cluster = False
 
         self.encoders = {"ordinal": OrdinalEncoder(),
@@ -287,12 +292,20 @@ class DataPreparator:
                   type_data='train'):
         """
         Transform the data to the model
+        :param add_covid_data:
+        :param add_rt_tariff_data:
         :param add_region_statistical_data: Is include region statistical data
         :param type_data: train or test
         :param df: Dataframe to transform
         :param fill_missing_categorical_by: Fill missing categorical values by [NaN, mean, median, mode] of subject_name
         :param fill_missing_numerical_by: Should fill missing numerical values by [np.mean, np.min, np.median, np.mode] of subject_name
         """
+        self.fill_missing_categorical_by = fill_missing_categorical_by
+        self.fill_missing_numerical_by = fill_missing_numerical_by
+        self.add_region_statistical_data = add_region_statistical_data
+        self.add_rt_tariff_data = add_rt_tariff_data
+        self.add_covid_data = add_covid_data
+
         new_df = df.copy()
         if add_region_statistical_data:
             new_df = add_statistical_feature(new_df)

@@ -33,6 +33,12 @@ if __name__ == "__main__":
                                     fill_missing_categorical_by='NaN',
                                     fill_missing_numerical_by=np.min,
                                     type_data='train')
+    pickle.dump(preparator, open('./models/preparator_' +
+                                 str(preparator.add_region_statistical_data) + "_" + \
+                                 str(preparator.add_rt_tariff_data) + "_" + \
+                                 str(preparator.add_covid_data) + "_" + \
+                                 str(preparator.fill_missing_categorical_by) + "_" + \
+                                 str(preparator.is_cluster) + ".pkcle", 'wb'))
     print("Train preparation data ended")
 
     cat_cols = train_df.select_dtypes(include=['object']).columns.values
@@ -41,13 +47,23 @@ if __name__ == "__main__":
     skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=seed_value)
 
     print("Train models started")
+
+
     if is_catboost:
         for train_ids, test_ids in skf.split(train_df.drop('label', axis=1), train_df.label):
             x_tr = train_df.drop('label', axis=1).iloc[train_ids]
             x_ts = train_df.drop('label', axis=1).iloc[test_ids]
             y_tr = train_df.label[train_ids]
             y_ts = train_df.label[test_ids]
-            ctb = CatBoostClassifier(iterations=10, verbose=200, task_type='GPU', random_seed=seed_value, eval_metric='AUC')
+            ctb = CatBoostClassifier(iterations=10,
+                                     verbose=200,
+                                     task_type='GPU',
+                                     random_seed=seed_value,
+                                     use_best_model=True,
+                                     eval_metric='NormalizedGini', # AUC
+                                     loss_function='Logloss',
+                                     early_stopping_rounds=500,
+                                     )
             ctb.fit(x_tr, y_tr, cat_features=cat_cols, eval_set=(x_ts, y_ts), use_best_model=True,
                     early_stopping_rounds=150)
             models.append(ctb)
