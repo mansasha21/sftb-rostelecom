@@ -1,12 +1,12 @@
 import os
 import random
 import pickle
-import pandas as pd
 import numpy as np
 from catboost import CatBoostClassifier
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import StratifiedKFold
 from preparator import *
+import argparse
 
 
 def fix_seed(seed_value):
@@ -16,24 +16,65 @@ def fix_seed(seed_value):
 
 
 if __name__ == "__main__":
+    # Seed everything
     seed_value = 7575
-    is_catboost = True
     fix_seed(seed_value)
+
+    # Parse input
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model-name',
+                        type=str,
+                        required=False,
+                        default='catboost',
+                        choices=['catboost', 'lama'],
+                        help='type of used model')
+    parser.add_argument('--train-path',
+                        type=str,
+                        required=False,
+                        default='data/train.csv',
+                        help='path to train data')
+    parser.add_argument('--save-folder',
+                        type=str,
+                        required=False,
+                        default='./models/',
+                        help='path to save folder')
+    parser.add_argument('--use-clustering',
+                        type=bool,
+                        required=False,
+                        default=False,
+                        help='use clustering feature')
+    parser.add_argument('--add-region-statistical-data',
+                        type=bool,
+                        required=False,
+                        default=True,
+                        help='use region statistical feature')
+    parser.add_argument('--add-rt-tariff-data',
+                        type=bool,
+                        required=False,
+                        default=False,
+                        help='use rt tariff feature')
+    parser.add_argument('--add-covid-data',
+                        type=bool,
+                        required=False,
+                        default=False,
+                        help='use covid data feature')
+
+    args = parser.parse_args()
 
     print("Train started")
     preparator = DataPreparator()
-    train_df = pd.read_csv('data/train.csv', sep=';')
+    train_df = pd.read_csv(args.train_path, sep=';')
 
     print("Train preparation data started")
-    preparator.fit(train_df, train_df.label, is_clustering=False)
+    preparator.fit(train_df, train_df.label, is_clustering=args.use_clustering)
     train_df = preparator.transform(df=train_df,
-                                    add_region_statistical_data=True,
-                                    add_rt_tariff_data=False,
-                                    add_covid_data=False,
+                                    add_region_statistical_data=args.add_region_statistical_data,
+                                    add_rt_tariff_data=args.add_rt_tariff_data,
+                                    add_covid_data=args.add_covid_data,
                                     fill_missing_categorical_by='NaN',
                                     fill_missing_numerical_by=np.min,
                                     type_data='train')
-    pickle.dump(preparator, open('./models/preparator_' +
+    pickle.dump(preparator, open(str(args.save_folder) + 'preparator_' +
                                  str(preparator.add_region_statistical_data) + "_" + \
                                  str(preparator.add_rt_tariff_data) + "_" + \
                                  str(preparator.add_covid_data) + "_" + \
@@ -47,9 +88,7 @@ if __name__ == "__main__":
     skf = StratifiedKFold(n_splits=10, shuffle=True, random_state=seed_value)
 
     print("Train models started")
-
-
-    if is_catboost:
+    if args.model_name == "catboost":
         for train_ids, test_ids in skf.split(train_df.drop('label', axis=1), train_df.label):
             x_tr = train_df.drop('label', axis=1).iloc[train_ids]
             x_ts = train_df.drop('label', axis=1).iloc[test_ids]
@@ -60,12 +99,14 @@ if __name__ == "__main__":
                                      task_type='GPU',
                                      random_seed=seed_value,
                                      use_best_model=True,
-                                     eval_metric='NormalizedGini', # AUC
+                                     eval_metric='NormalizedGini',  # AUC
                                      loss_function='Logloss',
                                      early_stopping_rounds=500,
                                      )
-            ctb.fit(x_tr, y_tr, cat_features=cat_cols, eval_set=(x_ts, y_ts), use_best_model=True,
-                    early_stopping_rounds=150)
+            ctb.fit(x_tr,
+                    y_tr,
+                    cat_features=cat_cols,
+                    eval_set=(x_ts, y_ts))
             models.append(ctb)
 
         for i, model in enumerate(models):
@@ -73,8 +114,7 @@ if __name__ == "__main__":
                 os.mkdir('models')
             except:
                 pass
-
-            pickle.dump(model, open(f'./models/model{i}.pckl', 'wb'))
+            pickle.dump(model, open(f'{args.save_folder}/model{i}.pckl', 'wb'))
     else:
         def roc_auc_my(y_true, y_pred):
             return 2 * roc_auc_score(y_true, y_pred) - 1
