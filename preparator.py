@@ -320,7 +320,6 @@ def add_salary_feature(df_test):
     df_salary.value_salary = df_salary.value_salary.astype(np.float32)
     df_test = df_test.merge(df_salary, left_on=['subject_name', 'year'], right_on=['region', 'year']).drop(
         ['region'], axis=1)
-    print(df_test.shape)
 
     return df_test
 
