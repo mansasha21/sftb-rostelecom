@@ -389,7 +389,6 @@ class DataPreparator:
 
         for con in new_df.select_dtypes(include=['float64', 'int64']).columns:
             new_df[con] = new_df[con].astype(np.float32)
-        new_df.to_csv("tmp.csv", index=False)
         print(new_df.info())
         # Fill categorical missing values
         cat_cols = new_df.select_dtypes(include=['object']).columns.tolist()
