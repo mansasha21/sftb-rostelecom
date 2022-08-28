@@ -303,6 +303,19 @@ def add_population_feature(df_test):
     df_population = pd.read_csv('important/growing_population.csv')
     df_test = df_test.merge(df_population, left_on=['subject_name', 'year'], right_on=['territory', 'year']).drop(
         ['territory'], axis=1)
+
+    return df_test
+
+
+def add_salary_feature(df_test):
+    """
+    Добавляет фичу о заработной плате
+    :param x: датафрейм с данными о пользователях
+    :return: датафрейм с добавленной фичей
+    """
+    df_salary = pd.read_csv('important/salary_data.csv')
+    df_test = df_test.merge(df_salary, left_on=['subject_name', 'year'], right_on=['region', 'year']).drop(
+        ['region'], axis=1)
     print(df_test.columns)
 
     return df_test
@@ -334,13 +347,15 @@ class DataPreparator:
                   add_rt_tariff_data=False,
                   add_covid_data=False,
                   add_rozn_data=False,
+                  add_salary_data=False,
                   add_growing_population_data=False,
                   type_data='train'):
         """
         Transform the data to the model
-        :param add_rozn_data:
-        :param add_covid_data:
-        :param add_rt_tariff_data:
+        :param add_salary_data: добавлять данные о зарплате
+        :param add_rozn_data: добавлять данные о розничной цене
+        :param add_covid_data: добавлять данные о коронавирусе
+        :param add_rt_tariff_data: добавлять данные о тарифах
         :param add_region_statistical_data: Is include region statistical data
         :param type_data: train or test
         :param df: Dataframe to transform
@@ -366,6 +381,8 @@ class DataPreparator:
             new_df = add_rozn_feature(new_df)
         if add_growing_population_data:
             new_df = add_population_feature(new_df)
+        if add_salary_data:
+            new_df = add_salary_feature(new_df)
 
         # Fill categorical missing values
         cat_cols = new_df.select_dtypes(include=['object']).columns.tolist()
