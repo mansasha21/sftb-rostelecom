@@ -290,9 +290,8 @@ def add_rozn_feature(df_test):
     :return: датафрейм с добавленной фичей
     """
     df_rozn = pd.read_csv('important/rozn.csv')
-    df_test.merge(df_rozn,left_on=['subject_name', 'year'], right_on=['region', 'year']).drop(
-        ['region', 'year'], axis=1)
-
+    df_test = df_test.merge(df_rozn, left_on=['subject_name', 'year'], right_on=['region', 'year']).drop(
+        ['region'], axis=1)
     return df_test
 
 def add_population_feature(df_test):
@@ -302,8 +301,9 @@ def add_population_feature(df_test):
     :return: датафрейм с добавленной фичей
     """
     df_population = pd.read_csv('important/growing_population.csv')
-    df_test.merge(df_population,left_on=['subject_name', 'year'], right_on=['region', 'year']).drop(
-        ['region', 'year'], axis=1)
+    df_test = df_test.merge(df_population, left_on=['subject_name', 'year'], right_on=['territory', 'year']).drop(
+        ['territory'], axis=1)
+    print(df_test.columns)
 
     return df_test
 
@@ -365,7 +365,7 @@ class DataPreparator:
         if add_rozn_data:
             new_df = add_rozn_feature(new_df)
         if add_growing_population_data:
-            new_df = add_rozn_feature(new_df)
+            new_df = add_population_feature(new_df)
 
         # Fill categorical missing values
         cat_cols = new_df.select_dtypes(include=['object']).columns.tolist()
