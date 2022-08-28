@@ -213,6 +213,56 @@ def add_statistical_feature(df):
     return df
 
 
+def add_tariff_price_feature(test_init):
+    dfs = pd.read_csv("./data/additional_data_all_cities.csv", sep=",", index_col=0)
+    test_init['city'] = test_init['city_name']
+    df3 = dfs.merge(test_init, on='city', how='right')
+    df3['Апгрейд'] = df3.groupby('subject_name')['Апгрейд'].transform(lambda x: x.fillna(x.min()))
+    df3['Игровой'] = df3.groupby('subject_name')['Игровой'].transform(lambda x: x.fillna(x.min()))
+    df3['Технологии доступа'] = df3.groupby('subject_name')['Технологии доступа'].transform(lambda x: x.fillna(x.min()))
+    df3['Технологии доступа PRO'] = df3.groupby('subject_name')['Технологии доступа PRO'].transform(
+        lambda x: x.fillna(x.min()))
+    df3['Технологии контроля'] = df3.groupby('subject_name')['Технологии контроля'].transform(
+        lambda x: x.fillna(x.min()))
+    df3.drop(['city'], axis=1, inplace=True)
+    return df3
+
+
+def add_covid_cases_feature(df_test):
+    df_covid = pd.read_csv('./data/owid-covid-data.csv')
+    df_covid.drop(['continent', 'location', 'new_cases_smoothed', 'total_deaths', 'new_deaths',
+                   'new_deaths_smoothed', 'total_cases_per_million',
+                   'new_cases_per_million', 'new_cases_smoothed_per_million',
+                   'total_deaths_per_million', 'new_deaths_per_million',
+                   'new_deaths_smoothed_per_million', 'reproduction_rate', 'icu_patients',
+                   'icu_patients_per_million', 'hosp_patients',
+                   'hosp_patients_per_million', 'weekly_icu_admissions',
+                   'weekly_icu_admissions_per_million', 'weekly_hosp_admissions',
+                   'weekly_hosp_admissions_per_million', 'total_tests', 'new_tests',
+                   'total_tests_per_thousand', 'new_tests_per_thousand',
+                   'new_tests_smoothed', 'new_tests_smoothed_per_thousand',
+                   'positive_rate', 'tests_per_case', 'tests_units', 'total_vaccinations',
+                   'people_vaccinated', 'people_fully_vaccinated', 'total_boosters',
+                   'new_vaccinations', 'new_vaccinations_smoothed',
+                   'total_vaccinations_per_hundred', 'people_vaccinated_per_hundred',
+                   'people_fully_vaccinated_per_hundred', 'total_boosters_per_hundred',
+                   'new_vaccinations_smoothed_per_million',
+                   'new_people_vaccinated_smoothed',
+                   'new_people_vaccinated_smoothed_per_hundred', 'stringency_index',
+                   'population', 'population_density', 'median_age', 'aged_65_older',
+                   'aged_70_older', 'gdp_per_capita', 'extreme_poverty',
+                   'cardiovasc_death_rate', 'diabetes_prevalence', 'female_smokers',
+                   'male_smokers', 'handwashing_facilities', 'hospital_beds_per_thousand',
+                   'life_expectancy', 'human_development_index',
+                   'excess_mortality_cumulative_absolute', 'excess_mortality_cumulative',
+                   'excess_mortality', 'excess_mortality_cumulative_per_million', ], axis=1, inplace=True)
+    df_covid.drop(["iso_code"], axis=1, inplace=True)
+    df_covid['period'] = df_covid['date']
+    df_covid.drop(["date"], axis=1, inplace=True)
+    df3 = df_covid.merge(df_test, on='period', how='right')
+    return df3
+
+
 class DataPreparator:
     def __init__(self):
         self.is_cluster = False
@@ -246,7 +296,11 @@ class DataPreparator:
         new_df = df.copy()
         if add_region_statistical_data:
             new_df = add_statistical_feature(new_df)
-            
+        if add_rt_tariff_data:
+            new_df = add_tariff_price_feature(new_df)
+        if add_covid_data:
+            new_df = add_covid_cases_feature(new_df)
+
         # Fill categorical missing values
         cat_cols = new_df.select_dtypes(include=['object']).columns.tolist()
         if fill_missing_categorical_by is not None:

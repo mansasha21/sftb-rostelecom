@@ -1,23 +1,36 @@
 import pickle
-import pandas as pd
-import numpy as np
-from catboost import CatBoostClassifier
 from pathlib import Path
 from preparator import *
-
+import pandas as pd
+pd.options.mode.chained_assignment = None
 if __name__ == "__main__":
     models_dir = Path('./models')
 
-    # TODO сделать нормальный подсос данных
-    train_df = pd.read_csv('data/train_catugra_v2.csv', sep=',')
-    val_df = pd.read_csv('data/test_catugra_v2.csv', sep=',', index_col=0)
+    print("Evaluation started")
+    # TODO maybe save feature before
+    preparator = DataPreparator()
+    train_df = pd.read_csv('data/train.csv', sep=';')
+    print("Start data preparation")
+    preparator.fit(train_df, train_df.label, is_clustering=False)
+    train_df = preparator.transform(df=train_df,
+                                    add_region_statistical_data=True,
+                                    add_rt_tariff_data=False,
+                                    add_covid_data=False,
+                                    fill_missing_categorical_by='NaN',
+                                    fill_missing_numerical_by=np.min,
+                                    type_data='train')
+
+    val_df = pd.read_csv('data/test.csv', sep=';')
+    val_df = preparator.transform(df=val_df,
+                                  add_region_statistical_data=True,
+                                  add_rt_tariff_data=False,
+                                  add_covid_data=False,
+                                  fill_missing_categorical_by='NaN',
+                                  fill_missing_numerical_by=np.min,
+                                  type_data='test')
+    print("End data preparation ended")
 
     cat_cols = train_df.select_dtypes(include=['object']).columns.values
-    train_df[cat_cols] = train_df[cat_cols].fillna('NaN')
-    val_df[cat_cols] = val_df[cat_cols].fillna('NaN')
-
-    # train_df = process_period(train_df)
-    # val_df = process_period(val_df)
 
     preds = np.mean([pickle.load(open(model_path, 'rb')).predict_proba(val_df.drop('label', axis=1))[:,1] for model_path in models_dir.glob('*.pckl')], axis=0)
 
