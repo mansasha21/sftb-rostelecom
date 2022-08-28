@@ -294,6 +294,7 @@ def add_rozn_feature(df_test):
         ['region'], axis=1)
     return df_test
 
+
 def add_population_feature(df_test):
     """
     Добавляет фичу населения
@@ -319,9 +320,10 @@ def add_salary_feature(df_test):
     df_salary.value_salary = df_salary.value_salary.astype(np.float32)
     df_test = df_test.merge(df_salary, left_on=['subject_name', 'year'], right_on=['region', 'year']).drop(
         ['region'], axis=1)
-    print(df_test.columns)
+    print(df_test.shape)
 
     return df_test
+
 
 class DataPreparator:
     def __init__(self):
@@ -373,7 +375,6 @@ class DataPreparator:
 
         new_df = df.copy()
         new_df = process_period(new_df)
-
         if add_region_statistical_data:
             new_df = add_statistical_feature(new_df)
         if add_rt_tariff_data:
@@ -387,6 +388,10 @@ class DataPreparator:
         if add_salary_data:
             new_df = add_salary_feature(new_df)
 
+        for con in new_df.select_dtypes(include=['float64', 'int64']).columns:
+            new_df[con] = new_df[con].astype(np.float32)
+        new_df.to_csv("tmp.csv", index=False)
+        print(new_df.info())
         # Fill categorical missing values
         cat_cols = new_df.select_dtypes(include=['object']).columns.tolist()
         if fill_missing_categorical_by is not None:
