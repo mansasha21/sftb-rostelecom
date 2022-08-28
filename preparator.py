@@ -301,6 +301,8 @@ def add_population_feature(df_test):
     :return: датафрейм с добавленной фичей
     """
     df_population = pd.read_csv('important/growing_population.csv')
+    df_population.value_population = df_population.value_population.astype(np.float32)
+
     df_test = df_test.merge(df_population, left_on=['subject_name', 'year'], right_on=['territory', 'year']).drop(
         ['territory'], axis=1)
 
@@ -314,6 +316,7 @@ def add_salary_feature(df_test):
     :return: датафрейм с добавленной фичей
     """
     df_salary = pd.read_csv('important/salary_data.csv')
+    df_salary.value_salary = df_salary.value_salary.astype(np.float32)
     df_test = df_test.merge(df_salary, left_on=['subject_name', 'year'], right_on=['region', 'year']).drop(
         ['region'], axis=1)
     print(df_test.columns)
