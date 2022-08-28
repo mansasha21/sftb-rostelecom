@@ -5,6 +5,7 @@ import pandas as pd
 pd.options.mode.chained_assignment = None
 if __name__ == "__main__":
     models_dir = Path('./models')
+    is_catboost = True
 
     print("Evaluation started")
     # TODO maybe save feature before
@@ -31,9 +32,15 @@ if __name__ == "__main__":
     print("End data preparation ended")
 
     cat_cols = train_df.select_dtypes(include=['object']).columns.values
-
-    preds = np.mean([pickle.load(open(model_path, 'rb')).predict_proba(val_df.drop('label', axis=1))[:,1] for model_path in models_dir.glob('*.pckl')], axis=0)
-
+    if is_catboost:
+        preds = np.mean([pickle.load(open(model_path, 'rb')).predict_proba(val_df.drop('label', axis=1))[:,1] for model_path in models_dir.glob('*.pckl')], axis=0)
+    else:
+        # preds = np.mean(
+        #     [pickle.load(open(model_path, 'rb')).predict_proba(val_df.drop('label', axis=1))[:, 1] for model_path in
+        #      models_dir.glob('*.pckl')], axis=0)
+        #
+        # automl =
+        pass
     label_val_df = val_df[['label']]
     label_val_df['pred'] = preds
     top5p = int(label_val_df.shape[0] * 0.05)

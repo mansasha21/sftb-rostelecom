@@ -214,7 +214,7 @@ def add_statistical_feature(df):
 
 
 def add_tariff_price_feature(test_init):
-    dfs = pd.read_csv("./data/additional_data_all_cities.csv", sep=",", index_col=0)
+    dfs = pd.read_csv("important/additional_data_all_cities.csv", sep=",", index_col=0)
     test_init['city'] = test_init['city_name']
     df3 = dfs.merge(test_init, on='city', how='right')
     df3['Апгрейд'] = df3.groupby('subject_name')['Апгрейд'].transform(lambda x: x.fillna(x.min()))
@@ -229,7 +229,7 @@ def add_tariff_price_feature(test_init):
 
 
 def add_covid_cases_feature(df_test):
-    df_covid = pd.read_csv('./data/owid-covid-data.csv')
+    df_covid = pd.read_csv('important/owid-covid-data.csv')
     df_covid.drop(['continent', 'location', 'new_cases_smoothed', 'total_deaths', 'new_deaths',
                    'new_deaths_smoothed', 'total_cases_per_million',
                    'new_cases_per_million', 'new_cases_smoothed_per_million',
