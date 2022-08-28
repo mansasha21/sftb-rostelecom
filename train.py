@@ -73,6 +73,11 @@ if __name__ == "__main__":
                         required=False,
                         default=True,
                         help='use salary data feature')
+    parser.add_argument('--add-money-data',
+                        type=bool,
+                        required=False,
+                        default=True,
+                        help='use money feature')
 
     args = parser.parse_args()
 
@@ -89,6 +94,7 @@ if __name__ == "__main__":
                                     add_rozn_data=args.add_rozn_data,
                                     add_growing_population_data=args.add_growing_population_data,
                                     add_salary_data=args.add_salary_data,
+                                    add_money_data=args.add_money_data,
                                     fill_missing_categorical_by='NaN',
                                     fill_missing_numerical_by=np.min,
                                     type_data='train')

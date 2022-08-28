@@ -324,6 +324,18 @@ def add_salary_feature(df_test):
     return df_test
 
 
+def add_money_feature(df_test):
+    """
+    Добавляет фичу о ценах
+    :param x: датафрейм с данными о ценах
+    :return: датафрейм с добавленной фичей
+    """
+    df_money = pd.read_csv('important/money_df.csv')
+    df_test = df_money.merge(df_test, on='period', how='right')
+
+    return df_test
+
+
 class DataPreparator:
     def __init__(self):
         self.add_covid_data = None
@@ -352,10 +364,12 @@ class DataPreparator:
                   add_covid_data=False,
                   add_rozn_data=False,
                   add_salary_data=False,
+                  add_money_data=False,
                   add_growing_population_data=False,
                   type_data='train'):
         """
         Transform the data to the model
+        :param add_money_data: добавляет фичу о доходах
         :param add_salary_data: добавлять данные о зарплате
         :param add_rozn_data: добавлять данные о розничной цене
         :param add_covid_data: добавлять данные о коронавирусе
@@ -386,7 +400,8 @@ class DataPreparator:
             new_df = add_population_feature(new_df)
         if add_salary_data:
             new_df = add_salary_feature(new_df)
-
+        if add_money_data:
+            new_df = add_money_feature(new_df)
         for con in new_df.select_dtypes(include=['float64', 'int64']).columns:
             new_df[con] = new_df[con].astype(np.float32)
         print(new_df.info())
