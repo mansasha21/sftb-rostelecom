@@ -60,7 +60,11 @@ if __name__ == "__main__":
                         required=False,
                         default=True,
                         help='use growing population feature')
-
+    parser.add_argument('--add-salary-data',
+                        type=bool,
+                        required=False,
+                        default=True,
+                        help='use salary data feature')
     args = parser.parse_args()
 
     print("Evaluation started")
@@ -79,6 +83,7 @@ if __name__ == "__main__":
                                   add_covid_data=args.add_covid_data,
                                   add_rozn_data=args.add_rozn_data,
                                   add_growing_population_data=args.add_growing_population_data,
+                                  add_salary_data=args.add_salary_data,
                                   fill_missing_categorical_by='NaN',
                                   fill_missing_numerical_by=np.min,
                                   type_data='test')
