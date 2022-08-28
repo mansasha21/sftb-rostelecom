@@ -3,6 +3,7 @@ import os
 import pickle
 from preparator import *
 import pandas as pd
+
 pd.options.mode.chained_assignment = None
 from pathlib import Path
 
@@ -53,11 +54,11 @@ if __name__ == "__main__":
 
     print("Evaluation started")
     preparator = automl = pickle.load(open(str(args.models_dir) + 'preparator_' +
-                                 str(args.add_region_statistical_data) + "_" + \
-                                 str(args.add_rt_tariff_data) + "_" + \
-                                 str(args.add_covid_data) + "_" + \
-                                 "NaN" + "_" + \
-                                 str(args.use_clustering) + ".pkcle", 'rb'))
+                                           str(args.add_region_statistical_data) + "_" + \
+                                           str(args.add_rt_tariff_data) + "_" + \
+                                           str(args.add_covid_data) + "_" + \
+                                           "NaN" + "_" + \
+                                           str(args.use_clustering) + ".pkcle", 'rb'))
     print("Start data preparation")
 
     val_df = pd.read_csv(args.val_path, sep=';')
@@ -73,7 +74,9 @@ if __name__ == "__main__":
     cat_cols = val_df.select_dtypes(include=['object']).columns.values
     preds = None
     if args.model_name == "catboost":
-        preds = np.mean([pickle.load(open(model_path, 'rb')).predict_proba(val_df.drop('label', axis=1))[:,1] for model_path in Path(str(args.models_dir)).glob('*.pckl')], axis=0)
+        preds = np.mean(
+            [pickle.load(open(model_path, 'rb')).predict_proba(val_df.drop('label', axis=1))[:, 1] for model_path in
+             Path(str(args.models_dir)).glob('*.pckl')], axis=0)
     else:
         # preds = np.mean(
         #     [pickle.load(open(model_path, 'rb')).predict_proba(val_df.drop('label', axis=1))[:, 1] for model_path in
@@ -84,7 +87,7 @@ if __name__ == "__main__":
     label_val_df = val_df[['label']]
     label_val_df['pred'] = preds
     top5p = int(label_val_df.shape[0] * 0.05)
-    res_response = label_val_df.sort_values('pred', ascending=False).iloc[:top5p].label.sum()/top5p
+    res_response = label_val_df.sort_values('pred', ascending=False).iloc[:top5p].label.sum() / top5p
     print('\n\n\n\n')
     print(res_response)
     try:

@@ -58,6 +58,11 @@ if __name__ == "__main__":
                         required=False,
                         default=False,
                         help='use covid data feature')
+    parser.add_argument('--add-rozn-data',
+                        type=bool,
+                        required=False,
+                        default=True,
+                        help='use rozn data feature')
 
     args = parser.parse_args()
 
@@ -71,6 +76,7 @@ if __name__ == "__main__":
                                     add_region_statistical_data=args.add_region_statistical_data,
                                     add_rt_tariff_data=args.add_rt_tariff_data,
                                     add_covid_data=args.add_covid_data,
+                                    add_rozn_data=args.add_rozn_data,
                                     fill_missing_categorical_by='NaN',
                                     fill_missing_numerical_by=np.min,
                                     type_data='train')

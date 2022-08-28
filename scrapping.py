@@ -5,7 +5,41 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from transliterate import translit
 
+def refractor_parsed_data(x):
+    if isinstance(x, float):
+        return x
+    if 'Кемеровская' in x:
+        return 'Кемеровская Область-Кузбасс'
+    if 'Саха' in x:
+        return 'Саха /Якутия/'
+    if 'Северная' in x:
+        return 'Северная Осетия - Алания'
+    if 'Ханты-Мансийский' in x:
+        return 'Ханты-Мансийский Автономный Округ - Югра'
+    if 'Марий' in x:
+        return 'Марий Эл'
+    if 'Ненецкий' in x:
+        return 'Ненецкий'
+    if 'Чукотский' in x:
+        return 'Чукотский'
+    if 'Ямало' in x:
+        return 'Ямало-Ненецкий'
+    if 'Город' in x:
+        return x.split()[1]
+    elif 'область' in x or 'край' in x:
+        return x.split()[0]
+    elif 'Республика' in x:
+        tmp = x.split()
+        if tmp[0] == 'Республика':
+            return tmp[1]
+        else:
+            return tmp[0]
 
+        return x.split()[0]
+    elif 'Осетия' in x:
+        return 'Северная Осетия - Алания'
+    else:
+        return x
 def get_rt_tariffs(read_path,
                    save_path,
                    save_every=25):

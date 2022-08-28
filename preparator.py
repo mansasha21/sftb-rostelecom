@@ -12,6 +12,11 @@ from category_encoders import OrdinalEncoder
 
 
 def process_period(try_set):
+    """
+    Обрабатывает периоды в датафрейме
+    :param try_set: датафрейм с периодами
+    :return: датафрейм с обработанными периодами
+    """
     try_set['period'] = pd.to_datetime(try_set['period'])
     try_set['year'] = try_set['period'].dt.year
     try_set['month'] = try_set['period'].dt.month
@@ -23,6 +28,11 @@ def process_period(try_set):
 
 
 def add_statistical_feature(df):
+    """
+    Add statistical feature to the dataframe
+    :param df: dataframe
+    :return: dataframe with statistical feature
+    """
     district = ['Центральный', 'Северо-Западный', 'Южный', 'Северо-Кавказский',
                 'Приволжский', 'Уральский', 'Сибирский', 'Дальневосточный']
     mobile_customer_district = [110.7, 110.8, 90, 70.8, 96.1, 100.9, 96.6, 98.7]
@@ -214,6 +224,11 @@ def add_statistical_feature(df):
 
 
 def add_tariff_price_feature(test_init):
+    """
+    Add tariff price feature to the test set
+    :param test_init: test set
+    :return: test set with tariff price feature
+    """
     dfs = pd.read_csv("important/additional_data_all_cities.csv", sep=",", index_col=0)
     test_init['city'] = test_init['city_name']
     df3 = dfs.merge(test_init, on='city', how='right')
@@ -229,6 +244,11 @@ def add_tariff_price_feature(test_init):
 
 
 def add_covid_cases_feature(df_test):
+    """
+    Добавляет количество зараженных как фичу
+    :param df_test: датафрейм с данными о пользователях
+    :return: датафрейм с добавленной фичей
+    """
     df_covid = pd.read_csv('important/owid-covid-data.csv')
     df_covid.drop(['continent', 'location', 'new_cases_smoothed', 'total_deaths', 'new_deaths',
                    'new_deaths_smoothed', 'total_cases_per_million',
@@ -263,6 +283,19 @@ def add_covid_cases_feature(df_test):
     return df3
 
 
+def add_rozn_feature(df_test):
+    """
+    Добавляет фичу розничной цены
+    :param x: датафрейм с данными о пользователях
+    :return: датафрейм с добавленной фичей
+    """
+    df_rozn = pd.read_csv('important/rozn.csv')
+    df_test.merge(df_rozn,left_on=['subject_name', 'year'], right_on=['region', 'year']).drop(
+        ['region', 'year'], axis=1)
+
+    return df_test
+
+
 class DataPreparator:
     def __init__(self):
         self.add_covid_data = None
@@ -289,9 +322,11 @@ class DataPreparator:
                   add_region_statistical_data=True,
                   add_rt_tariff_data=False,
                   add_covid_data=False,
+                  add_rozn_data=False,
                   type_data='train'):
         """
         Transform the data to the model
+        :param add_rozn_data:
         :param add_covid_data:
         :param add_rt_tariff_data:
         :param add_region_statistical_data: Is include region statistical data
@@ -307,13 +342,16 @@ class DataPreparator:
         self.add_covid_data = add_covid_data
 
         new_df = df.copy()
+        new_df = process_period(new_df)
+
         if add_region_statistical_data:
             new_df = add_statistical_feature(new_df)
         if add_rt_tariff_data:
             new_df = add_tariff_price_feature(new_df)
         if add_covid_data:
             new_df = add_covid_cases_feature(new_df)
-
+        if add_rozn_data:
+            new_df = add_rozn_feature(new_df)
         # Fill categorical missing values
         cat_cols = new_df.select_dtypes(include=['object']).columns.tolist()
         if fill_missing_categorical_by is not None:
@@ -350,7 +388,6 @@ class DataPreparator:
         elif self.is_cluster and type_data == 'test':
             new_df['cluster'] = self._clusterize_data_(new_df[f_cols])
 
-        new_df = process_period(new_df)
         return new_df
 
     def fit(self,
