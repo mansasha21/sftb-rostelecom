@@ -10,6 +10,17 @@ from category_encoders import CatBoostEncoder
 from category_encoders import TargetEncoder
 from category_encoders import OrdinalEncoder
 
+def process_period(try_set):
+    #try_set = try_set.drop(['total_cases', 'new_cases'], axis=1)
+    try_set['period'] = pd.to_datetime(try_set['period'])
+    try_set['year'] = try_set['period'].dt.year
+    try_set['month'] = try_set['period'].dt.month
+    try_set['day'] = try_set['period'].dt.day
+    try_set['cos_month'] = np.cos(try_set['period'].dt.day)
+    drop_cols = ['period','day']
+    try_set.drop(drop_cols, axis=1, inplace=True)
+    return try_set
+
 
 class DataPreparator:
     def __init__(self):
@@ -22,6 +33,7 @@ class DataPreparator:
         self.cat_boost_encoder = CatBoostEncoder()
         self.target_encoder = TargetEncoder()
         self.clustelizer = None
+        self.type_of_encoder = None
 
     def transform(self, df,
                   fill_missing_categorical_by="mode",
@@ -42,13 +54,15 @@ class DataPreparator:
             else:
                 new_df[col] = new_df.groupby('subject_name')[col].transform(lambda x: x.fillna(x.mode()))
 
+        if self.need_encode:
+            new_df[cat_cols] = self.encoders[self.type_of_encoder].transform(new_df[cat_cols])
         # Fill numerical missing values
         num_cols = new_df.select_dtypes(include=['float64', 'int64']).columns.tolist()
         # new_df[num_cols] = new_df[num_cols].fillna("NaN")
         for col in num_cols:
-            new_df[col] = new_df[col].fillna(new_df.groupby('subject_name')[col].transform(np.mean))
+            new_df[col] = new_df[col].fillna(new_df.groupby('subject_name')[col].transform(fill_missing_numerical_by))
         for col in num_cols:
-            new_df[col] = new_df[col].fillna(new_df.groupby('district')[col].transform(np.mean))
+            new_df[col] = new_df[col].fillna(new_df.groupby('district')[col].transform(fill_missing_numerical_by))
 
         # TODO: как то переписать type_data
         # TODO: add month and powertranform
@@ -58,6 +72,8 @@ class DataPreparator:
             new_df['cluster'] = self._clusterize_data_(new_df[f_cols])
         elif self.is_cluster and type_data == 'test':
             new_df['cluster'] = self._clusterize_data_(new_df[f_cols])
+
+        new_df = process_period(new_df)
         return new_df
 
     def fit(self,
@@ -80,12 +96,14 @@ class DataPreparator:
         elif type_of_scaler == "min_max":
             self.min_max_scaler.fit(X)
 
-        encoder = {"ordinal": self.ordinal_encoder,
+        self.encoders = {"ordinal": self.ordinal_encoder,
                    "label": self.label_encoder,
                    "cat_boost": self.cat_boost_encoder,
                    "target": self.target_encoder
                    }
-        encoder[type_of_encoder].fit(X, y)
+        if type_of_encoder:
+            self.type_of_encoder = type_of_encoder
+            self.encoders[type_of_encoder].fit(X, y)
 
         if is_clustering:
             self.is_cluster = True
