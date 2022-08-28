@@ -1,0 +1,14 @@
+.idea/
+.idea/*
+!important/owid-covid-data.csv
+!important/additional_data_all_cities.csv
+data/
+data/*
+catboost_info/
+catboost_info/*
+/models/
+*.xml
+*.cpython-37.pyc
+__pycache__/*
+*.pyc
+ans.csv
