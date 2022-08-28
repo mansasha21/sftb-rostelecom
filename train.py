@@ -56,13 +56,18 @@ if __name__ == "__main__":
     parser.add_argument('--add-covid-data',
                         type=bool,
                         required=False,
-                        default=False,
+                        default=True,
                         help='use covid data feature')
     parser.add_argument('--add-rozn-data',
                         type=bool,
                         required=False,
                         default=True,
                         help='use rozn data feature')
+    parser.add_argument('--add-growing-population-data',
+                        type=bool,
+                        required=False,
+                        default=True,
+                        help='use growing population feature')
 
     args = parser.parse_args()
 
@@ -77,6 +82,7 @@ if __name__ == "__main__":
                                     add_rt_tariff_data=args.add_rt_tariff_data,
                                     add_covid_data=args.add_covid_data,
                                     add_rozn_data=args.add_rozn_data,
+                                    add_growing_population_data=args.add_growing_population_data,
                                     fill_missing_categorical_by='NaN',
                                     fill_missing_numerical_by=np.min,
                                     type_data='train')

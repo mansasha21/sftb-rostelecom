@@ -17,12 +17,12 @@ def process_period(try_set):
     :param try_set: датафрейм с периодами
     :return: датафрейм с обработанными периодами
     """
-    try_set['period'] = pd.to_datetime(try_set['period'])
-    try_set['year'] = try_set['period'].dt.year
-    try_set['month'] = try_set['period'].dt.month
-    try_set['day'] = try_set['period'].dt.day
-    try_set['cos_month'] = np.cos(try_set['period'].dt.month)
-    drop_cols = ['period', 'day']
+    try_set['period_mod'] = pd.to_datetime(try_set['period'])
+    try_set['year'] = try_set['period_mod'].dt.year
+    try_set['month'] = try_set['period_mod'].dt.month
+    try_set['day'] = try_set['period_mod'].dt.day
+    try_set['cos_month'] = np.cos(try_set['period_mod'].dt.month)
+    drop_cols = ['period_mod', 'day']
     try_set.drop(drop_cols, axis=1, inplace=True)
     return try_set
 
@@ -295,6 +295,17 @@ def add_rozn_feature(df_test):
 
     return df_test
 
+def add_population_feature(df_test):
+    """
+    Добавляет фичу населения
+    :param x: датафрейм с данными о пользователях
+    :return: датафрейм с добавленной фичей
+    """
+    df_population = pd.read_csv('important/growing_population.csv')
+    df_test.merge(df_population,left_on=['subject_name', 'year'], right_on=['region', 'year']).drop(
+        ['region', 'year'], axis=1)
+
+    return df_test
 
 class DataPreparator:
     def __init__(self):
@@ -323,6 +334,7 @@ class DataPreparator:
                   add_rt_tariff_data=False,
                   add_covid_data=False,
                   add_rozn_data=False,
+                  add_growing_population_data=False,
                   type_data='train'):
         """
         Transform the data to the model
@@ -352,6 +364,9 @@ class DataPreparator:
             new_df = add_covid_cases_feature(new_df)
         if add_rozn_data:
             new_df = add_rozn_feature(new_df)
+        if add_growing_population_data:
+            new_df = add_rozn_feature(new_df)
+
         # Fill categorical missing values
         cat_cols = new_df.select_dtypes(include=['object']).columns.tolist()
         if fill_missing_categorical_by is not None:
@@ -387,7 +402,8 @@ class DataPreparator:
             new_df['cluster'] = self._clusterize_data_(new_df[f_cols])
         elif self.is_cluster and type_data == 'test':
             new_df['cluster'] = self._clusterize_data_(new_df[f_cols])
-
+        drop_cols = ['period']
+        new_df.drop(drop_cols, axis=1, inplace=True)
         return new_df
 
     def fit(self,
