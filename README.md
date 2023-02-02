@@ -48,8 +48,8 @@ python train.py && python eval.py
 |----------------------|----------------|-----------------------|
 | Суржиков Александр   | Data Scientist | https://t.me/mansasha |
 | ---                  | ---            | ---                   |
-| Назаренко Екатерина  | Data Scientist | -                     |
-| ---                  | ---            | https://t.me/cutttle  |                    |
+| Назаренко Екатерина  | Data Scientist | https://t.me/cutttle  |
+| ---                  | ---            | ---                   |
 | Чаусов Дмитрий       | Data Scientist | -                     |
 | ---                  | ---            | ---                   |
 | Ванданов Сергей      | Data Scientist | -                     |
